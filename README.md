@@ -20,5 +20,15 @@ yum -y install edb-pgbouncen119
 yum -y install edb-pgpool44
 yum -y install edb-as15-pgpool44-extensions
 ```
+### Install 
+```sh
+useradd enterprisedb
+passwd enterprisedb
+curl -1sLf 'https://downloads.enterprisedb.com/zp579PrIC9a7kY4rQtxX63HAaXHtzeCA/enterprise/setup.rpm.sh' | sudo -E bash
+yum -y install edb-as15-server
+sudo PGSETUP_INITDB_OPTIONS="-E UTF-8" /usr/edb/as15/bin/edb-as-15-setup initdb
+sudo systemctl start edb-as-15
+systemctl enable edb-as-15.service
+```
 
 

@@ -1,0 +1,35 @@
+psql -h /tmp -p 5444 -U enterprisedb -d edb
+plsql -f filename -p 5444 -U enterprisedb -d 
+
+password:
+bottom of file 
+vim /var/lib/edb/as15/data/pg_hba.conf
+    replace peer to scram-sha-256
+    replace ident to scram-sha-256
+
+yum install java -y
+yum install edb-edbplus
+/usr/edb/edbplus/edbplus.sh
+
+
+# Postgres edb path
+export PATH=$PATH:/usr/edb/as15/bin
+
+create database 
+mkdir /edbstore
+chown enterprisedb:enterprisedb /edbstore
+su - enterprisedb
+initdb -D /edbstore -w 
+pg_ctl -D /edbstore -l /edbstore/startlog start
+pg_ctl -D /edbstore/ status
+pg_ctl -D /edbstore start
+pg_ctl -D /edbstore stop
+
+pg_controldata /edbstore        --- list data 
+
+### parameter 
+alter system set work_mem 32768;
+vim /var/lib/edb/as15/data/postgresql.conf 
+    change any conf and reload 
+pg_ctl -D /var/lib/edb/as15/data reload
+
