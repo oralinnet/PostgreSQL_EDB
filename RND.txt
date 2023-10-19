@@ -1,0 +1,21 @@
+1. Create Primary Database 
+2. Create pgbouncer 
+3. barman server
+4. create replica server 
+
+
+
+https://www.step-by-step-dba.com/post/steps-by-step-configuration-of-efm-4-2-in-rhel-8
+
+https://dbaclass.com/article/how-to-configure-streaming-replication-in-postgres-14/
+
+https://dbtut.com/index.php/2022/04/27/creating-a-hot-standby-in-edb-postgresql/
+https://dbtut.com/index.php/2022/03/22/edb-postgres-13-installation-on-oracle-linux-7-8/
+
+https://www.kaysariqbal.com/postgresql-13-standby-configuration-using-file-based-log-shipping-by-rsync-in-linux/
+
+
+
+INSERT INTO dept VALUES (12,'IT','DHAKA');
+
+'test ! -f enterprisedb@192.168.5.241:/var/lib/edb/as15/ARCHIVELOG/%f && rsync -a %p enterprisedb@192.168.5.241:/var/lib/edb/as15/ARCHIVELOG/%f'

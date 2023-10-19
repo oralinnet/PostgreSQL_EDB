@@ -33,3 +33,4 @@ vim /var/lib/edb/as15/data/postgresql.conf
     change any conf and reload 
 pg_ctl -D /var/lib/edb/as15/data reload
 
+

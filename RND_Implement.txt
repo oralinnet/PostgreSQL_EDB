@@ -1,0 +1,176 @@
+Port open,
+ssh keybase login from primary to standby db
+password base auth all db server 
+select name,setting from pg_settings where name like 'archive%' ;
+select pg_switch_wal();
+
+password: hello, whoami, edb
+
+
+************ Install EPAS 15 PRIMARY SERVER ************
+sudo curl -1sLf 'https://downloads.enterprisedb.com/zp579PrIC9a7kY4rQtxX63HAaXHtzeCA/enterprise/setup.rpm.sh' | sudo -E bash
+sudo dnf -y install edb-as15-server
+sudo PGSETUP_INITDB_OPTIONS="-E UTF-8" /usr/edb/as15/bin/edb-as-15-setup initdb
+sudo systemctl start edb-as-15
+sudo su - enterprisedb
+psql edb
+ALTER ROLE enterprisedb IDENTIFIED BY password;
+CREATE DATABASE hr;
+\c hr
+CREATE TABLE public.dept (deptno numeric(2) NOT NULL CONSTRAINT dept_pk
+PRIMARY KEY, dname varchar(14) CONSTRAINT dept_dname_uq UNIQUE, loc
+varchar(13));
+INSERT INTO dept VALUES (10,'ACCOUNTING','NEW YORK');
+INSERT into dept VALUES (20,'RESEARCH','DALLAS');
+SELECT * FROM dept;
+=============== valid ====================
+
+*********** STANDBY SERVER ****************
+sudo curl -1sLf 'https://downloads.enterprisedb.com/zp579PrIC9a7kY4rQtxX63HAaXHtzeCA/enterprise/setup.rpm.sh' | sudo -E bash
+sudo dnf -y install edb-as15-server
+
+****************** Replica *********
+----- Primary site 
+
+sudo su - enterprisedb
+psql edb
+show archive_mode;
+mkdir /var/lib/edb/as15/ARCHIVELOG  -p
+chown -R enterprisedb:enterprisedb /var/lib/edb/as15/ARCHIVELOG
+vim /var/lib/edb/as15/data/postgresql.conf
+
+archive_mode = on
+#archive_command = 'cp %p /var/lib/edb/as15/ARCHIVELOG/%f'
+archive_command = 'test ! -f enterprisedb@192.168.5.241:/var/lib/edb/as15/ARCHIVELOG/%f && rsync -a %p enterprisedb@192.168.5.241:/var/lib/edb/as15/ARCHIVELOG/%f'
+#archive_command = 'rsync -a %p enterprisedb@epass:/var/lib/edb/as15/ARCHIVELOG/%f'
+#archive_command = 'rsync -a %p enterprisedb@epass:/var/lib/edb/as15/ARCHIVELOG/%f'
+wal_level = replica
+max_wal_senders = 3
+max_replication_slots = 4
+
+systemctl restart edb-as-15.service
+
+sudo su - enterprisedb
+psql edb
+show archive_mode;
+CREATE ROLE replication WITH REPLICATION PASSWORD 'hello' LOGIN;
+
+vim /var/lib/edb/as15/data/postgresql.conf
+listen_addresses = '*'
+
+vim /var/lib/edb/as15/data/pg_hba.conf
+# IPv4 local connections:
+host    all             all             0.0.0.0/0              md5
+host  replication     replication     192.168.5.241/32         md5
+
+systemctl restart edb-as-15.service
+
+----- Standby site 
+
+Stop edb-as-15.service
+backup data directory 
+sudo su - enterprisedb
+mkdir /var/lib/edb/as15/ARCHIVELOG  -p
+mkdir /var/lib/edb/as15/ARCHIVELOG  -p
+pg_basebackup -h 192.168.5.240 -U enterprisedb -D /var/lib/edb/as15/data -U replication -v -P --wal-method=stream --write-recovery-conf
+touch /var/lib/edb/as15/data/standby.signal
+systemctl restart edb-as-15.service
+systemctl enable edb-as15-server
+
+========== valid ============
+
+
+**************** EFM ***************
+Master Node (node1) - 192.168.5.240
+Standby Node (node2)- 192.168.5.241
+Witness Node (node3) - 192.168.5.242
+VIP - 192.168.5.243
+
+yum -y install java
+-- Update pg_hba.conf file on both primary and standby server with the information of the replication and witness servers and reload it
+host    all             all            192.168.5.240/32           md5
+host    all             all            192.168.5.241/32           md5
+host    all             all            192.168.5.242/32           md5
+
+select pg_reload_conf();
+
+--- Install EFM binary in all Master ,Standby and witness server 
+dnf -y install edb-efm47
+--- configure EFM Primary db
+create user efm with password 'hello' superuser ;
+alter role efm with password 'hello' superuser ;
+su - efm
+psql edb
+
+cd /etc/edb/efm-4.7/
+cp efm.properties.in  efm.properties
+cp efm.nodes.in  efm.nodes
+chown efm:efm efm.properties
+chown efm:efm efm.nodes
+
+/usr/edb/efm-4.2/bin/efm encrypt efm
+-- past encrypt password to efm.properties
+vim efm.properties
+
+db.user=efm
+db.password.encrypted=cn3zba41e84d67787834c16bdfeae3f5
+db.port=5444
+db.database=edb
+db.service.owner=enterprisedb
+db.service.name= edb-as-15
+db.bin=/usr/edb/as15/bin/
+db.data.dir=/var/lib/edb/as15/data
+db.config.dir=/var/lib/edb/as15/data
+bind.address=192.168.5.240:7800
+is.witness=false
+ping.server.ip=192.168.5.239
+auto.allow.hosts=true
+virtual.ip=192.168.5.1			-- ip muse be alive 		
+virtual.ip.interface=eth0
+virtual.ip.prefix=24
+virtual.ip.single=true
+
+NB: user.email can't blank, 
+
+--     Add nodes entries in efm.nodes 
+192.168.5.240:7800
+192.168.5.241:7800
+192.168.5.242:7800
+
+systemctl restart edb-as-15.service
+systemctl start edb-efm-4.7.service
+
+/usr/edb/efm-4.7/bin/efm cluster-status efm
+
+-- Standby Node Configuration
+-- copy file from primary to standby 
+scp efm.nodes efm.properties root@192.168.5.241:/etc/edb/efm-4.7
+chown efm:efm /etc/edb/efm-4.7/efm.properties
+chown efm:efm /etc/edb/efm-4.7/efm.nodes
+
+vim /etc/edb/efm-4/efm.properties
+
+bind.address=192.168.5.241:7800
+
+firewall-cmd --permanent --add-port=7800/tcp
+firewall-cmd --reload
+systemctl restart edb-as-15.service
+systemctl start edb-efm-4.7.service
+
+/usr/edb/efm-4.7/bin/efm cluster-status efm
+
+----- witness configure
+-- copy file from primary to standby 
+scp efm.nodes efm.properties root@192.168.5.242:/etc/edb/efm-4.7
+chown efm:efm /etc/edb/efm-4.7/efm.properties
+chown efm:efm /etc/edb/efm-4.7/efm.nodes
+vim /etc/edb/efm-4/efm.properties
+
+bind.address=192.168.5.242:7800
+
+firewall-cmd --permanent --add-port=7800/tcp
+firewall-cmd --reload
+systemctl restart edb-as-15.service
+systemctl start edb-efm-4.7.service
+
+/usr/edb/efm-4.7/bin/efm cluster-status efm
