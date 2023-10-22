@@ -1,5 +1,6 @@
 Port open,
 ssh keybase login from primary to standby db
+rsync package installed 
 password base auth all db server 
 select name,setting from pg_settings where name like 'archive%' ;
 select pg_switch_wal();
@@ -14,7 +15,7 @@ sudo PGSETUP_INITDB_OPTIONS="-E UTF-8" /usr/edb/as15/bin/edb-as-15-setup initdb
 sudo systemctl start edb-as-15
 sudo su - enterprisedb
 psql edb
-ALTER ROLE enterprisedb IDENTIFIED BY password;
+ALTER ROLE enterprisedb IDENTIFIED BY edb;
 CREATE DATABASE hr;
 \c hr
 CREATE TABLE public.dept (deptno numeric(2) NOT NULL CONSTRAINT dept_pk
@@ -60,17 +61,20 @@ listen_addresses = '*'
 
 vim /var/lib/edb/as15/data/pg_hba.conf
 # IPv4 local connections:
-host    all             all             0.0.0.0/0              md5
-host  replication     replication     192.168.5.241/32         md5
+host    all             all             0.0.0.0/0              scram-sha-256
+host  replication     replication     192.168.5.241/32         scram-sha-256
 
 systemctl restart edb-as-15.service
+
+configure ssh keybase auth in enterprisedb user 
+
+configure firewall 
 
 ----- Standby site 
 
 Stop edb-as-15.service
 backup data directory 
 sudo su - enterprisedb
-mkdir /var/lib/edb/as15/ARCHIVELOG  -p
 mkdir /var/lib/edb/as15/ARCHIVELOG  -p
 pg_basebackup -h 192.168.5.240 -U enterprisedb -D /var/lib/edb/as15/data -U replication -v -P --wal-method=stream --write-recovery-conf
 touch /var/lib/edb/as15/data/standby.signal
@@ -80,6 +84,18 @@ systemctl enable edb-as15-server
 ========== valid ============
 
 
+---- async to sync -----
+-- PRIMARY
+vim /var/lib/edb/as15/data/postgresql.conf
+synchronous_commit = remote_apply
+synchronous_standby_names = '*'
+
+-- Secondary 
+vim /var/lib/edb/as15/data/postgresql.conf
+
+hot_standby = on
+primary_conninfo = 'host=192.168.5.240 port=5400 user=replication'
+
 **************** EFM ***************
 Master Node (node1) - 192.168.5.240
 Standby Node (node2)- 192.168.5.241
@@ -88,9 +104,9 @@ VIP - 192.168.5.243
 
 yum -y install java
 -- Update pg_hba.conf file on both primary and standby server with the information of the replication and witness servers and reload it
-host    all             all            192.168.5.240/32           md5
-host    all             all            192.168.5.241/32           md5
-host    all             all            192.168.5.242/32           md5
+host    all             all            192.168.5.240/32           scram-sha-256
+host    all             all            192.168.5.241/32           scram-sha-256
+host    all             all            192.168.5.242/32           scram-sha-256
 
 select pg_reload_conf();
 
@@ -108,24 +124,24 @@ cp efm.nodes.in  efm.nodes
 chown efm:efm efm.properties
 chown efm:efm efm.nodes
 
-/usr/edb/efm-4.2/bin/efm encrypt efm
+/usr/edb/efm-4.7/bin/efm encrypt efm
 -- past encrypt password to efm.properties
 vim efm.properties
 
 db.user=efm
-db.password.encrypted=cn3zba41e84d67787834c16bdfeae3f5
+db.password.encrypted=c0c2f3d8c85ad2c7d59ee7fceb27bddd
 db.port=5444
 db.database=edb
 db.service.owner=enterprisedb
 db.service.name= edb-as-15
 db.bin=/usr/edb/as15/bin/
-db.data.dir=/var/lib/edb/as15/data
-db.config.dir=/var/lib/edb/as15/data
+db.data.dir=/var/lib/edb/as15/data/
+db.config.dir=/var/lib/edb/as15/data/
 bind.address=192.168.5.240:7800
 is.witness=false
-ping.server.ip=192.168.5.239
+ping.server.ip=192.168.5.1		-- ip muse be alive 	
 auto.allow.hosts=true
-virtual.ip=192.168.5.1			-- ip muse be alive 		
+virtual.ip=192.168.5.243				
 virtual.ip.interface=eth0
 virtual.ip.prefix=24
 virtual.ip.single=true
@@ -140,6 +156,8 @@ NB: user.email can't blank,
 systemctl restart edb-as-15.service
 systemctl start edb-efm-4.7.service
 
+configure firewall for 7800 port 
+
 /usr/edb/efm-4.7/bin/efm cluster-status efm
 
 -- Standby Node Configuration
@@ -148,7 +166,7 @@ scp efm.nodes efm.properties root@192.168.5.241:/etc/edb/efm-4.7
 chown efm:efm /etc/edb/efm-4.7/efm.properties
 chown efm:efm /etc/edb/efm-4.7/efm.nodes
 
-vim /etc/edb/efm-4/efm.properties
+vim /etc/edb/efm-4.7/efm.properties
 
 bind.address=192.168.5.241:7800
 
@@ -164,13 +182,30 @@ systemctl start edb-efm-4.7.service
 scp efm.nodes efm.properties root@192.168.5.242:/etc/edb/efm-4.7
 chown efm:efm /etc/edb/efm-4.7/efm.properties
 chown efm:efm /etc/edb/efm-4.7/efm.nodes
-vim /etc/edb/efm-4/efm.properties
+vim /etc/edb/efm-4.7/efm.properties
 
 bind.address=192.168.5.242:7800
+is.witness=true 
 
 firewall-cmd --permanent --add-port=7800/tcp
 firewall-cmd --reload
-systemctl restart edb-as-15.service
 systemctl start edb-efm-4.7.service
 
 /usr/edb/efm-4.7/bin/efm cluster-status efm
+
+/usr/edb/efm-4.7/bin/efm allow-node  efm 192.168.5.240
+
+
+
+synchronous_commit = remote_apply
+synchronous_standby_names = '*'
+select usename, application_name, client_addr, state, sync_priority, sync_state from pg_stat_replication;
+
+
+hot_standby = on
+primary_conninfo = 'host=192.168.5.140 port=5400 user=replication'
+
+
+dnf install chrony -y
+systemctl enable chronyd
+systemctl start chronyd
