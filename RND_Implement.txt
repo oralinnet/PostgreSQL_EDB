@@ -57,7 +57,7 @@ show archive_mode;
 CREATE ROLE replication WITH REPLICATION PASSWORD 'hello' LOGIN;
 
 vim /var/lib/edb/as15/data/postgresql.conf
-listen_addresses = '*'
+listen_addresses = '*'		in prod must use replica server ip 
 
 vim /var/lib/edb/as15/data/pg_hba.conf
 # IPv4 local connections:
@@ -72,7 +72,7 @@ configure firewall
 
 ----- Standby site 
 
-Stop edb-as-15.service
+Stop edb-as-15.service			-- importance 
 backup data directory 
 sudo su - enterprisedb
 mkdir /var/lib/edb/as15/ARCHIVELOG  -p
@@ -88,13 +88,14 @@ systemctl enable edb-as15-server
 -- PRIMARY
 vim /var/lib/edb/as15/data/postgresql.conf
 synchronous_commit = remote_apply
-synchronous_standby_names = '*'
+synchronous_standby_names = 'replica2'		use cluser name 
 
 -- Secondary 
 vim /var/lib/edb/as15/data/postgresql.conf
 
+cluster_name = 'replica2'			cluser name 
 hot_standby = on
-primary_conninfo = 'host=192.168.5.240 port=5400 user=replication'
+primary_conninfo = 'host=192.168.5.240 port=5444 user=replication'
 
 **************** EFM ***************
 Master Node (node1) - 192.168.5.240
@@ -153,7 +154,7 @@ NB: user.email can't blank,
 192.168.5.241:7800
 192.168.5.242:7800
 
-systemctl restart edb-as-15.service
+
 systemctl start edb-efm-4.7.service
 
 configure firewall for 7800 port 
@@ -172,10 +173,12 @@ bind.address=192.168.5.241:7800
 
 firewall-cmd --permanent --add-port=7800/tcp
 firewall-cmd --reload
-systemctl restart edb-as-15.service
+
 systemctl start edb-efm-4.7.service
 
 /usr/edb/efm-4.7/bin/efm cluster-status efm
+
+ efm promote efm
 
 ----- witness configure
 -- copy file from primary to standby 
@@ -209,3 +212,37 @@ primary_conninfo = 'host=192.168.5.140 port=5400 user=replication'
 dnf install chrony -y
 systemctl enable chronyd
 systemctl start chronyd
+dnf install vim -y
+dnf install rsync -y 
+dnf install net-tools -y
+
+
+auto.resume.period
+efm set-priority efm ip address
+
+
+
+
+synchronous_commit = remote_apply
+synchronous_standby_names = '*'
+select usename, application_name, client_addr, state, sync_priority, sync_state from pg_stat_replication;
+
+
+hot_standby = on
+primary_conninfo = 'host=192.168.5.140 port=5400 user=replication'
+
+
+dnf install chrony -y
+systemctl enable chronyd
+systemctl start chronyd
+
+efm add-node cluster_name ip_address [priority]
+
+
+auto.resume.period
+efm set-priority efm ip address
+
+
+dr1-mz-db-01
+
+curl -O https://releases.ubuntu.com/18.04/ubuntu-18.04.6-desktop-amd64.iso
