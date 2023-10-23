@@ -246,3 +246,11 @@ efm set-priority efm ip address
 dr1-mz-db-01
 
 curl -O https://releases.ubuntu.com/18.04/ubuntu-18.04.6-desktop-amd64.iso
+
+
+
+promote_trigger_file = '/tmp/trigger_file.trg'   postgresql.conf
+
+
+
+auto.allow.hosts=true			efm properties
