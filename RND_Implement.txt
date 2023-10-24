@@ -40,6 +40,7 @@ mkdir /var/lib/edb/as15/ARCHIVELOG  -p
 chown -R enterprisedb:enterprisedb /var/lib/edb/as15/ARCHIVELOG
 vim /var/lib/edb/as15/data/postgresql.conf
 
+promote_trigger_file = '/tmp/trigger_file.trg'
 archive_mode = on
 #archive_command = 'cp %p /var/lib/edb/as15/ARCHIVELOG/%f'
 archive_command = 'test ! -f enterprisedb@192.168.5.241:/var/lib/edb/as15/ARCHIVELOG/%f && rsync -a %p enterprisedb@192.168.5.241:/var/lib/edb/as15/ARCHIVELOG/%f'
@@ -254,3 +255,59 @@ promote_trigger_file = '/tmp/trigger_file.trg'   postgresql.conf
 
 
 auto.allow.hosts=true			efm properties
+
+
+
+------------- Pgbouncer ---------
+sudo curl -1sLf 'https://downloads.enterprisedb.com/zp579PrIC9a7kY4rQtxX63HAaXHtzeCA/enterprise/setup.rpm.sh' | sudo -E bash
+sudo dnf -y install edb-pgbouncer120
+cd /etc/edb/pgbouncer1.20/
+vim userlist.txt
+"enterprisedb" "edb"			-- username and password 
+vim edb-pgbouncer-1.20.ini
+[databases]
+;; foodb over Unix socket
+pgtest = host=192.168.5.242 port=5444 dbname=edb
+listen_addr = *
+listen_port = 6432
+auth_file = /etc/edb/pgbouncer1.20/userlist.txt
+pool_mode = session
+
+systemctl start edb-pgbouncer-1.20.service
+
+ensure database pg_hab.conf acept pgbouncer ip 
+firewall-cmd --permanent --add-port=6432/tcp
+firewall-cmd --reload
+
+------------ PEM ------------
+curl -1sLf 'https://downloads.enterprisedb.com/zp579PrIC9a7kY4rQtxX63HAaXHtzeCA/enterprise/setup.rpm.sh' | sudo -E bash
+sudo dnf -y install edb-as15-server
+sudo PGSETUP_INITDB_OPTIONS="-E UTF-8" /usr/edb/as15/bin/edb-as-15-setup initdb
+sudo systemctl start edb-as-15
+sudo su - enterprisedb
+psql edb
+ALTER ROLE enterprisedb IDENTIFIED BY edb;
+
+sudo dnf -y install edb-as15-server-sslutils
+sudo dnf -y install edb-pem
+/usr/edb/pem/bin/configure-pem-server.sh
+
+Install type: 1:Web Services and Database, 2:Web Services 3: Database [ ] :1
+Enter local database server installation path (i.e. /usr/edb/as12 , or /usr/pgsql-12, etc.) [ ] :/usr/edb/as15/
+Enter database super user name [ ] :enterprisedb
+Enter database server port number [ ] :5444
+Enter database super user password [ ] :
+Please enter CIDR formatted network address range that agents will connect to the server from, to be added to the server's pg_hba.conf file. For example, 192.168.1.0/24 [ 0.0.0.0/0 ] :192.168.5.0/24
+Enter database systemd unit file or init script name (i.e. edb-as-12 or postgresql-12, etc.) [ ] :edb-as-15
+Please specify agent certificate path (Script will attempt to create this directory, if it does not exists) [ /root/.pem/ ] :
+
+
+firewall-cmd --permanent --add-port=8443/tcp
+firewall-cmd --reload
+
+httpd server enable and start after reboot 
+
+https://192.168.5.242:8443/pem
+
+user: enterprisedb
+pass: edb
