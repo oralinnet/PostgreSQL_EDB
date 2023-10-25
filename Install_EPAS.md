@@ -21,6 +21,7 @@ sudo systemctl status edb-as-15
 ```sh
 sudo su - enterprisedb
 psql edb
+### sql
 ALTER ROLE enterprisedb IDENTIFIED BY edb;
 CREATE DATABASE hr;
 \c hr
@@ -31,18 +32,42 @@ INSERT INTO dept VALUES (10,'ACCOUNTING','NEW YORK');
 INSERT into dept VALUES (20,'RESEARCH','DALLAS');
 SELECT * FROM dept;
 ```
+#### Update EPAS PATH in enterprisedb user 
+```sh
+sudo su - enterprisedb
+vim .bash_profile
+# Postgres edb path
+export PATH=$PATH:/usr/edb/as15/bin
 
-#### Password base auth 
+### Now reload bash_profile or logout and login 
+```
+
+#### Password base authentication 
+- First set or create passowd for database user
 
 ```sh
 #### Login Database and alter or create password 
 sudo su - enterprisedb
 psql edb
-
-```sql
+### sql 
 ALTER ROLE enterprisedb IDENTIFIED BY edb;
 \q
+###
 ```
+- In pg_hba.conf change METHOD
+```sh
+sudo su - enterprisedb 
+vim /var/lib/edb/as15/data/pg_hba.conf
+    replace peer to scram-sha-256
+    replace ident to scram-sha-256
+:x          ## save file 
+sudo systemctl restart edb-as-15            ### Restart database service or reload 
+pg_ctl -D /var/lib/edb/as15/data reload     ### for reload 
 
 ```
 
+- Check Password base authentication 
+```sh
+sudo su - enterprisedb 
+psql -h /tmp -p 5444 -U enterprisedb -d edb     ### Now you need password for login database
+```
