@@ -5,6 +5,7 @@
 - Enable EDB subcription
 - Internet Access 
 - OS user with sudo privileges
+- Disable Selinux 
 
 #### Install EPAS(15) In Default Location
 - Login EDB websit (https://www.enterprisedb.com/accounts/profile) 
@@ -70,4 +71,37 @@ pg_ctl -D /var/lib/edb/as15/data reload     ### for reload
 ```sh
 sudo su - enterprisedb 
 psql -h /tmp -p 5444 -U enterprisedb -d edb     ### Now you need password for login database
+```
+
+#### Configure Database in Another Directory 
+- First create directory for DATA
+- Give proper permission in enterprisedb user 
+
+```sh
+sudo mkdir /mydb/ -p
+sudo chown -R enterprisedb:enterprisedb /mydb
+chmod -R 775 /mydb
+sudo su - enterprisedb 
+initdb -D /mydb -w                          ### install DB
+pg_ctl -D /mydb -l /mydb/startlog start     ### start DB
+pg_ctl -D /mydb/ status                     ### DB status
+pg_ctl -D /mydb start                       ### Start DB
+pg_ctl -D /mydb stop                        ### Stop DB
+
+```
+
+#### post installation task 
+- Enable edb-as-15 service for auto start after reboot
+- Open DB port in firewall 
+- Accept Connection from out site in DB 
+
+```sh
+systemctl enable edb-as-15
+firewall-cmd --permanent --add-port=5444/tcp
+firewall-cm --reload 
+sudo su - enterprisedb 
+vim /var/lib/edb/as15/data/pg_hba.conf
+host  replication     replication     192.168.5.241/32         scram-sha-256        ### cline ip address 
+sudo systemctl restart edb-as-15            ### Restart database service or reload 
+pg_ctl -D /var/lib/edb/as15/data reload     ### for reload 
 ```
