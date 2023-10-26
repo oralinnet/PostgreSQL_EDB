@@ -128,5 +128,5 @@ select usename, application_name, client_addr, state, sync_priority, sync_state 
 - Check replication 
 - Check wal file move to replica server 
 ```sh
-select pg_switch_wal();         ### swit wal file
+select pg_switch_wal();         ### switch wal file
 ```
