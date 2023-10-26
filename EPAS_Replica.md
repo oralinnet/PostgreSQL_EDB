@@ -47,7 +47,6 @@ max_wal_senders = 3
 max_replication_slots = 4
 :x      ### save file 
 sudo systemctl restart edb-as-15            ### Restart database service or reload 
-pg_ctl -D /var/lib/edb/as15/data reload     ### for reload 
 psql edb            #### login database 
 show archive_mode;  #### Check archive mode 
 CREATE ROLE replication WITH REPLICATION PASSWORD 'hello' LOGIN;        #### Create role for replication 
@@ -81,8 +80,8 @@ ssh enterprisedb@192.168.5.240
 
 -- configure firewall in both server 
 ```sh
-firewall-cmd --permanent --add-port=5444/tcp
-firewall-cm --reload 
+sudo firewall-cmd --permanent --add-port=5444/tcp
+sudo firewall-cmd --reload 
 ```
 ### Replica server configuration
 - Stop edb-as-15 service if its running most importance 
@@ -95,7 +94,6 @@ pg_basebackup -h 192.168.5.240 -U enterprisedb -D /var/lib/edb/as15/data -U repl
 ### 192.168.5.240   primary server ip, enterprisedb Database user, /var/lib/edb/as15/data directory location replica server, replication DB user 
 touch /var/lib/edb/as15/data/standby.signal
 sudo systemctl restart edb-as-15.service        ### restart service
-sudo systemctl enable edb-as15-server           ### enable server if you want 
 ```
 #### Replication mode change 
 - By default replication mode is async
