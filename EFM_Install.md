@@ -180,7 +180,7 @@ is.witness=true
 ```sh
 sudo systemctl start edb-efm-4.7.service
 sudo firewall-cmd --permanent --add-port=7800/tcp
-sudo firewall-cm --reload
+sudo firewall-cmd --reload
 
 ```
 - Check EFM Status 
