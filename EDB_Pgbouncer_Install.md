@@ -4,6 +4,7 @@
 - Enable EDB subcription
 - Internet Access 
 - OS user with sudo privileges
+- Ensure EPAS accept pgbouncer IP Address
 
 #### Install Pgbouncer On RHEL 8
 - Login EDB websit (https://www.enterprisedb.com/accounts/profile) 
