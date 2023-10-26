@@ -101,7 +101,7 @@ sudo firewall-cmd --permanent --add-port=5444/tcp
 sudo firewall-cm --reload 
 sudo su - enterprisedb 
 vim /var/lib/edb/as15/data/pg_hba.conf
-host  replication     replication     192.168.5.241/32         scram-sha-256        ### cline ip address 
+host  all     all     192.168.5.241/32         scram-sha-256        ### cline ip address 
 sudo systemctl restart edb-as-15            ### Restart database service or reload 
 pg_ctl -D /var/lib/edb/as15/data reload     ### for reload 
 ```
