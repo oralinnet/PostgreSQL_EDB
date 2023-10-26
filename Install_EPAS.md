@@ -98,7 +98,7 @@ pg_ctl -D /mydb stop                        ### Stop DB
 ```sh
 sudo systemctl enable edb-as-15
 sudo firewall-cmd --permanent --add-port=5444/tcp
-sudo firewall-cm --reload 
+sudo firewall-cmd --reload 
 sudo su - enterprisedb 
 vim /var/lib/edb/as15/data/pg_hba.conf
 host  all     all     192.168.5.241/32         scram-sha-256        ### cline ip address 
