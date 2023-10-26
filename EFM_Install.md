@@ -140,7 +140,7 @@ bind.address=192.168.5.241:7800         -- standby server ip
 ```sh
 sudo systemctl start edb-efm-4.7.service
 sudo firewall-cmd --permanent --add-port=7800/tcp
-sudo firewall-cm --reload
+sudo firewall-cmd --reload
 
 ```
 - Check EFM Status 
