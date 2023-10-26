@@ -1,6 +1,6 @@
 ### Install EPAS(15) In RPM Base Linux Server 
 
-#### Requrement 
+####  Prerequisite 
 - OS RHEL 8 With subscription 
 - Enable EDB subcription
 - Internet Access 
