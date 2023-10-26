@@ -6,7 +6,7 @@
 - Replica Server only EPAS Binary Installed
 - Both Server sudo or root access 
 - Ensure that Both servers can use ssh/scp passwordless communication
-- Both Server Nedd Internet Access 
+- Both Server Need Internet Access 
 - Ensure Primary and replica DB is password base authentication active
 - Primary : 192.168.5.240, Secondary: 192.168.5.241
 - OS RHEL 8
@@ -53,7 +53,7 @@ show archive_mode;  #### Check archive mode
 CREATE ROLE replication WITH REPLICATION PASSWORD 'hello' LOGIN;        #### Create role for replication 
 \q
 vim /var/lib/edb/as15/data/postgresql.conf
-listen_addresses = '*'		#### in production must use replica server ip 
+listen_addresses = '*'		#### in production must use Production server ip 
 #### Accept replica server IP
 vim /var/lib/edb/as15/data/pg_hba.conf
 # IPv4 local connections:
