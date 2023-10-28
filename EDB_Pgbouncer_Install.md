@@ -24,7 +24,7 @@ sudo vim userlist.txt
 ### update configuration file information
 sudo vim edb-pgbouncer-1.20.ini
 [databases]     ## section
-pgtest = host=192.168.5.242 port=5444 dbname=edb    ## pgtest con string name, host EPAS IP, port DB port, dbname EPAS db name. client site dbname= pgtest, After Connect on pgadmin create database name pgtest.
+edb = host=192.168.5.242 port=5444 dbname=edb    ## edb con string name and also EPAS db name should be same, host EPAS IP, port DB port, dbname EPAS db name. client site dbname= edb, 
 listen_addr = *         # NIC IP address, if you have multiple nic card then you can defind which ip grant connect for Pgbouncer. * means all nic ip allowd for Pgbouncer
 listen_port = 6432      # pgbouncer port 
 auth_file = /etc/edb/pgbouncer1.20/userlist.txt     ## username password file
