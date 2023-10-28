@@ -19,13 +19,13 @@ sudo dnf -y install edb-pgbouncer120
 ## Go to configuration Directory
 cd /etc/edb/pgbouncer1.20/
 sudo vim userlist.txt
-"enterprisedb" "edb"        ### enterprisedb user name of EPAS, edb is Database Name
+"enterprisedb" "edb"        ### enterprisedb user name of EPAS, edb is EPAS pasword
 
 ### update configuration file information
 sudo vim edb-pgbouncer-1.20.ini
 [databases]     ## section
-pgtest = host=192.168.5.242 port=5444 dbname=edb    ## pgtest con string name, host EPAS IP, port DB port, dbname EPAS db name.
-listen_addr = *         # which ip allow to connect
+pgtest = host=192.168.5.242 port=5444 dbname=edb    ## pgtest con string name, host EPAS IP, port DB port, dbname EPAS db name. client site dbname= pgtest, After Connect on pgadmin create database name pgtest.
+listen_addr = *         # NIC IP address, if you have multiple nic card then you can defind which ip grant connect for Pgbouncer. * means all nic ip allowd for Pgbouncer
 listen_port = 6432      # pgbouncer port 
 auth_file = /etc/edb/pgbouncer1.20/userlist.txt     ## username password file
 pool_mode = session         ## pool mode
