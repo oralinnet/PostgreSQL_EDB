@@ -65,6 +65,13 @@ backup_options = concurrent_backup
 backup_method = rsync
 archiver = on
 ```
+- First, we need to locate the value of the incoming backup directory from the barman-backup-server. On the Barman server, switch to the user barman
+```sh
+sudo su - barman
+barman show-server edb01 | grep incoming_wals_directory
+## barman show-server command output
+## incoming_wals_directory: /var/lib/barman/edb01/edb01/incoming
+```
 
 ### EPAS Server 
 ```sh
@@ -76,19 +83,30 @@ sudo su - enterprisedb
 psql edb 
 select pg_switch_wal();	        ## Switch wal file and check it 
 ```
-
-### Barman Server 
+### Testing Barman 
 ```sh
-sudo su - barman
-barman check edb01         -- Barman conf check for edb01
-barman switch-xlog --force --archive edb01
-barman show-server edb01
-barman backup edb01
-barman check-backup
-barman check-backup edb01
+sudo su - barman            # switch barman user 
+barman list-server          # server list 
+barman check edb01         # Barman configuration check for edb01
+barman switch-xlog --force --archive edb01      # Wal file switch over
+barman show-server edb01        # show edb01 Server backup 
+barman backup edb01         # Backup edb01 server 
+barman list-backup edb01    ### output First part is name second part is backup id
+barman check-backup edb01 backup_id         # backup check 
+barman show-backup edb01 latest     # letest backup check 
+barman list-files edb01 backup-id   # file show 
 
 ```
 
-```t
+#### Scheduling Backups
+- Ideally your backups should happen automatically on a schedule
 
+```t
+In this step we’ll automate our backups, and we’ll tell Barman to perform maintenance on the backups so files older than the retention policy are deleted. To enable scheduling, run this command as the barman user on the edb01 (switch to this user if necessary)
+```
+```sh
+sudo su - barman 
+crontab -e
+30 23 * * * /usr/bin/barman backup edb01    # full backup of the edb01 every night at 11:30 PM
+* * * * * /usr/bin/barman cron              # Run every minute and perform maintenance operations on both WAL files and base backup files.
 ```

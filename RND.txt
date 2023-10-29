@@ -19,6 +19,9 @@ https://www.youtube.com/watch?v=ddKm7a7xOpk
 https://www.enterprisedb.com/blog/high-availability-enterprise-failover-manager-tutorial
 
 
+https://www.digitalocean.com/community/tutorials/how-to-back-up-restore-and-migrate-postgresql-databases-with-barman-on-centos-7
+
+
 
 INSERT INTO dept VALUES (12,'IT','DHAKA');
 
