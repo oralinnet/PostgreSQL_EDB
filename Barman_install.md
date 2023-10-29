@@ -110,3 +110,61 @@ crontab -e
 30 23 * * * /usr/bin/barman backup edb01    # full backup of the edb01 every night at 11:30 PM
 * * * * * /usr/bin/barman cron              # Run every minute and perform maintenance operations on both WAL files and base backup files.
 ```
+
+#### Restoring or Migrating to a Remote Server
+
+- First stop target database 
+```sh
+sudo systemctl stop edb-as-15
+```
+- Let’s locate the details for the latest backup
+```sh
+barman show-backup edb01 latest
+
+### output 
+Backup 20231029T170617:
+  Server Name            : edb01
+  System Id              : 7294227102000760227
+  Status                 : DONE
+  PostgreSQL Version     : 150004
+  PGDATA directory       : /var/lib/edb/as15/data
+
+  Base backup information:
+    Disk usage           : 96.7 MiB (96.7 MiB with WALs)
+    Incremental size     : 29.7 MiB (-69.30%)
+    Timeline             : 1
+    Begin WAL            : 000000010000000000000011
+    End WAL              : 000000010000000000000011
+    WAL number           : 1
+    WAL compression ratio: 99.90%
+    Begin time           : 2023-10-29 17:06:17.225323+06:00
+    End time             : 2023-10-29 17:06:20.062575+06:00
+    Copy time            : 1 second
+    Estimated throughput : 19.7 MiB/s
+
+```
+```t
+From the output, note down the backup ID printed on the first line. Backup 20231029T170617
+Also check when the backup was made, from the Begin time filed 
+Next, run this command to restore the specified backup from the edb01 to the target server:
+
+```
+```sh
+barman recover --target-time "Begin time"  --remote-ssh-command "ssh enterprisedb@target-db-server-ip"   edb01   backup-id   /var/lib/edb/as15/data
+```
+
+```t
+There are quite a few options, arguments, and variables here, so let’s explain them.
+
+    -- target-time "Begin time": Use the begin time from the show-backup command
+    -- remote-ssh-command "ssh postgres@standby-db-server-ip": Use the IP address of the target-db-server-ip
+    -- edb01: Use the name of the database server from your /etc/barman.conf file
+    backup-id: Use the backup ID from the show-backup command, or use latest if that’s the one you want
+    /var/lib/edb/as15/data: The path where you want the backup to be restored. This path will become the new data directory for Postgres on the standby server. Here, we have chosen the default data directory for Postgres in CentOS. For real-life use cases, choose the appropriate path
+
+```
+
+- After successfully Restore database start target-db-server service 
+```sh
+sudo systemctl start edb-as-15
+```

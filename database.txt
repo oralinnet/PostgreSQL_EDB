@@ -1,5 +1,5 @@
 psql -h /tmp -p 5444 -U enterprisedb -d edb
-plsql -f filename -p 5444 -U enterprisedb -d 
+psql -f filename -p 5444 -U enterprisedb -d 
 
 password:
 bottom of file 
