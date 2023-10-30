@@ -204,8 +204,8 @@ sudo systemctl restart edb-efm-4.7.service
 
 - Some EFM Command 
 ```sh
-efm promote efm         # switchover
-auto.resume.period      # 
+efm promote efm         # Promoted Standby to parimary, Primary will shut down. 
+efm promote efm -switchover     # swithover server, In my case when server is sync with standby that time its not working. async its woking good 
 efm set-priority efm ip address     # Change priority Server 
 ```
 
