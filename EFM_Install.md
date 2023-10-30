@@ -140,7 +140,7 @@ bind.address=192.168.5.241:7800         -- standby server ip
 - Start Service and configure firewall
 ```sh
 sudo systemctl start edb-efm-4.7.service
-sudo firewall-cmd --permanent --add-port=7800/tcp
+sudo firewall-cmd --permanent --add-port={7800,7810}/tcp
 sudo firewall-cmd --reload
 
 ```
@@ -180,7 +180,7 @@ is.witness=true
 - Start Service and configure firewall
 ```sh
 sudo systemctl start edb-efm-4.7.service
-sudo firewall-cmd --permanent --add-port=7800/tcp
+sudo firewall-cmd --permanent --add-port={7800,7810}/tcp
 sudo firewall-cmd --reload
 
 ```
