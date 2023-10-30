@@ -1,34 +1,51 @@
-# PostgreSQL_EDB
+# PostgreSQL_EDB With HA Cluster 
+
+- Chosen Architecture
+![Architecture](ss/prereq_arch.png)
 
 #### Lab Setup Requrement 
-- Centos 7 with 2 GB RAM 40 GB Free space 
+- Four VM with RHEL 8 minimum 2 GB RAM 40 GB Free space 
 - Latest Version of EDB PostgreSQL Advance Server must be install
 - OS super user access 
 - EDB credentials for EDB Repos 2.0
 - Internet access 
 
-#### Requred Package 
-```sh
-yum -y install edb-as15-server
-yum -y install edb-as15-server-contrib
-yum -y install edb-as15-server-sslutils
-yum -y install edb-pem
-yum -y install edb-as15-server-sqlprofiler
-yum -y install edb-as15-server-indexadvisor
-yum -y install edb-as15-server-edb_wait_states
-yum -y install edb-pgbouncen119
-yum -y install edb-pgpool44
-yum -y install edb-as15-pgpool44-extensions
-```
-### Install 
-```sh
-useradd enterprisedb
-passwd enterprisedb
-curl -1sLf 'https://downloads.enterprisedb.com/zp579PrIC9a7kY4rQtxX63HAaXHtzeCA/enterprise/setup.rpm.sh' | sudo -E bash
-yum -y install edb-as15-server
-sudo PGSETUP_INITDB_OPTIONS="-E UTF-8" /usr/edb/as15/bin/edb-as-15-setup initdb
-sudo systemctl start edb-as-15
-systemctl enable edb-as-15.service
-```
+#### Prerequisite
+- RHEL 8 subscribe with Redhat 
+- Ensure that all servers can use ssh/scp passwordless communication
+- Proʀde SSH access
+- Proʀde SUDO priʀleges
+- Adjust firewall to allow EFM agents to communicate on ports 7800 and 7810
+- Adjust firewall to allow communication on designated database port between Database
+- servers, EFM, and PEM server: typically port 5444
+- Access to ping 8.8.8.8 or another internal server that should always answer
+- Reserve an IP address on the same subnet as all servers for the VIP (Virtual IP Address)
+
+- The following components will be installed on each of the servers
+![Components](ss/prereq1.png)
 
 
+## RHEL Subscribe
+
+-   Create RHN id / RedHat account in [redhat](https://www.redhat.com/)
+-   Register System with redhat
+-   Attach pool for ansible
+-   Enable repos for ansible
+-   dnf install ansible -y
+
+## Subscribe your system with Redhat
+```sh
+subscription-manager register
+subscription-manager list --available
+subscription-manager attach --pool=<pool id>
+subscription-manager repos --enable ansible-VERSION-for-rhel-8-x86_64-rpms
+subscription-manager repos --enable ansible-2.9-for-rhel-8-x86_64-rpms
+yum install bash-completion
+```
+
+#### Installation Step with details 
+- Step 1: [Install EPAS](https://https://github.com/oralinnet/PostgreSQL_EDB/blob/main/Install_EPAS.md)
+- Step 2: [Configure Replica](https://github.com/oralinnet/PostgreSQL_EDB/blob/main/EPAS_Replica.md)
+- Step 3: [Install EFM](https://github.com/oralinnet/PostgreSQL_EDB/blob/main/EFM_Install.md)
+- Step 4: [Install Pgbouncer](https://github.com/oralinnet/PostgreSQL_EDB/blob/main/EDB_Pgbouncer_Install.md)
+- Step 5: [Install Barman](https://github.com/oralinnet/PostgreSQL_EDB/blob/main/Barman_install.md)

@@ -11,6 +11,7 @@
 - Ensure you have VIP (virtual IP )
 - witness server no need EPAS 
 - Ensure Primary DB and Standby DB password base authentication 
+- Adjust firewall to allow EFM agents to communicate on ports 7800 and 7810
 
 - In my case I used Three Servers 
 ```t
@@ -100,7 +101,7 @@ vim efm.nodes
 - Start Service and configure firewall
 ```sh
 sudo systemctl start edb-efm-4.7.service
-sudo firewall-cmd --permanent --add-port=7800/tcp
+sudo firewall-cmd --permanent --add-port={7800,7810}/tcp
 sudo firewall-cm --reload
 
 ```
