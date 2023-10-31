@@ -128,3 +128,7 @@ select usename, application_name, client_addr, state, sync_priority, sync_state 
 ```sh
 select pg_switch_wal();         ### switch wal file
 ```
+- NB
+```
+If you change your server IP address maybe your replication is not working. Please reconfigure replication again. 
+```

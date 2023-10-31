@@ -11,7 +11,7 @@
 - Ensure you have VIP (virtual IP )
 - witness server no need EPAS 
 - Ensure Primary DB and Standby DB password base authentication 
-- Adjust firewall to allow EFM agents to communicate on ports 7800 and 7810
+- Adjust firewall to allow EFM agents to communicate on ports 7800 to 7810
 
 - In my case I used Three Servers 
 ```t
@@ -101,7 +101,7 @@ vim efm.nodes
 - Start Service and configure firewall
 ```sh
 sudo systemctl start edb-efm-4.7.service
-sudo firewall-cmd --permanent --add-port={7800,7810}/tcp
+sudo firewall-cmd --permanent --add-port=7800-7810/tcp
 sudo firewall-cmd --reload
 
 ```
@@ -140,7 +140,7 @@ bind.address=192.168.5.241:7800         -- standby server ip
 - Start Service and configure firewall
 ```sh
 sudo systemctl start edb-efm-4.7.service
-sudo firewall-cmd --permanent --add-port={7800,7810}/tcp
+sudo firewall-cmd --permanent --add-port=7800-7810/tcp
 sudo firewall-cmd --reload
 
 ```
@@ -180,7 +180,7 @@ is.witness=true
 - Start Service and configure firewall
 ```sh
 sudo systemctl start edb-efm-4.7.service
-sudo firewall-cmd --permanent --add-port={7800,7810}/tcp
+sudo firewall-cmd --permanent --add-port=7800-7810/tcp
 sudo firewall-cmd --reload
 
 ```
@@ -209,3 +209,9 @@ efm promote efm -switchover     # swithover server, In my case when server is sy
 efm set-priority efm ip address     # Change priority Server 
 ```
 
+- NB 
+```t
+When You reconfigure EPAS please restart EFM. Make ensure Ports are Open. Ensure All Email address is same. 
+Ensure "promote_trigger_file = '/tmp/trigger_file.trg'" this line is entry on both Primary and 
+standby server postgresql.conf file. Ensure your network connection speed minimum 100 MB/s.
+```
