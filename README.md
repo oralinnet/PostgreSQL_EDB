@@ -4,9 +4,7 @@
 ![Architecture](ss/prereq_arch.png)
 
 #### Lab Setup Requrement 
-- Four VM with RHEL 8 minimum 2 GB RAM 40 GB Free space 
-- Latest Version of EDB PostgreSQL Advance Server must be install
-- OS super user access 
+- VM with RHEL 8 minimum 2 GB RAM 20 GB Free space 
 - EDB credentials for EDB Repos 2.0
 - Internet access 
 
