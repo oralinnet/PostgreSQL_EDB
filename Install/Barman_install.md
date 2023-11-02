@@ -77,6 +77,8 @@ barman show-server edb01 | grep incoming_wals_directory
 ```sh
 # edit postgresql.conf
 archive_command = 'test ! -f barman@192.168.5.242:/var/lib/barman/edb01/edb01/incoming/%f && rsync -a %p barman@192.168.5.242:/var/lib/barman/edb01/edb01/incoming/%f'
+### Archive command for multifile location archive file copy
+archive_command = 'rsync -a %p /var/lib/edb/as15/ARCHIVELOG/%f && rsync -a %p barman@192.168.5.242:/var/lib/barman/edb01/edb01/incoming/%f && rsync -a %p enterprisedb@192.168.5.241:/var/lib/edb/as15/ARCHIVELOG/%f'
 
 sudo systemctl restart edb-as-15
 sudo su - enterprisedb 
