@@ -44,8 +44,8 @@ yum install bash-completion
 ```
 
 #### Installation Step with details 
-- Step 1: [Install EPAS](https://github.com/oralinnet/PostgreSQL_EDB/blob/main/Install_EPAS.md)
-- Step 2: [Configure Replica](https://github.com/oralinnet/PostgreSQL_EDB/blob/main/EPAS_Replica.md)
-- Step 3: [Install EFM](https://github.com/oralinnet/PostgreSQL_EDB/blob/main/EFM_Install.md)
-- Step 4: [Install Pgbouncer](https://github.com/oralinnet/PostgreSQL_EDB/blob/main/EDB_Pgbouncer_Install.md)
-- Step 5: [Install Barman](https://github.com/oralinnet/PostgreSQL_EDB/blob/main/Barman_install.md)
+- Step 1: [Install EPAS](https://github.com/oralinnet/PostgreSQL_EDB/blob/main/Install/Install_EPAS.md)
+- Step 2: [Configure Replica](https://github.com/oralinnet/PostgreSQL_EDB/blob/main/Install/EPAS_Replica.md)
+- Step 3: [Install EFM](https://github.com/oralinnet/PostgreSQL_EDB/blob/main/Install/EFM_Install.md)
+- Step 4: [Install Pgbouncer](https://github.com/oralinnet/PostgreSQL_EDB/blob/main/Install/EDB_Pgbouncer_Install.md)
+- Step 5: [Install Barman](https://github.com/oralinnet/PostgreSQL_EDB/blob/main/Install/Barman_install.md)
