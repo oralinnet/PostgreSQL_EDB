@@ -1,0 +1,45 @@
+synchronous_commit = on
+synchronous_standby_names = 'FIRST 1 (replica1, barman_receive_wal)'
+
+
+host  replication     streaming_barman 127.0.0.1/32             scram-sha-256
+host  replication     streaming_barman 192.168.5.242/32         scram-sha-256
+
+
+
+[standby]
+description =  "standby Server backup"
+ssh_command = ssh enterprisedb@192.168.5.241
+conninfo = host=192.168.5.241 user=barman port=5444 dbname=edb password=hello
+backup_options = concurrent_backup
+backup_method = rsync
+streaming_conninfo = host=192.168.5.241 port=5444 user=streaming_barman dbname=edb password=hello
+streaming_archiver = on
+archiver = on
+slot_name = barman
+create_slot = auto
+path_prefix = "/usr/edb/as15/bin"
+
+
+
+
+CREATE ROLE streaming_barman WITH REPLICATION PASSWORD 'hello' LOGIN;
+
+alter user barman WITH REPLICATION PASSWORD 'hello' LOGIN;
+
+
+select pg_switch_wal();
+
+
+psql -U enterprisedb -d edb -h 192.168.5.240 -c 'select pg_switch_wal()'
+
+
+vim ~/.pgpass
+hostname:port:database:username:password
+
+
+
+psql -c 'SELECT version()' -U barman -h  192.168.5.240 edb
+
+
+psql -U streaming_barman -h 192.168.5.240 -c 'IDENTIFY_SYSTEM' replication=1
