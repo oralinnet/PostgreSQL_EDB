@@ -47,3 +47,4 @@ yum install bash-completion
 - Step 3: [Install EFM](https://github.com/oralinnet/PostgreSQL_EDB/blob/main/Install/EFM_Install.md)
 - Step 4: [Install Pgbouncer](https://github.com/oralinnet/PostgreSQL_EDB/blob/main/Install/EDB_Pgbouncer_Install.md)
 - Step 5: [Install Barman](https://github.com/oralinnet/PostgreSQL_EDB/blob/main/Install/Barman_install.md)
+- step 6: [Install PEM](https://github.com/oralinnet/PostgreSQL_EDB/blob/main/Install/EDB_PEM_Install.md)

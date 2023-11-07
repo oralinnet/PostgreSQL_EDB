@@ -177,6 +177,7 @@ sudo systemctl start edb-as-15
 ```sh
 sudo su - enterprisedb 
 psql edb 
+create user barman superuser  password 'hello';
 CREATE ROLE streaming_barman WITH REPLICATION PASSWORD 'hello' LOGIN;
 \q
 ```
@@ -184,6 +185,7 @@ CREATE ROLE streaming_barman WITH REPLICATION PASSWORD 'hello' LOGIN;
 ```sh
 host  replication     streaming_barman 127.0.0.1/32             scram-sha-256
 host  replication     streaming_barman 192.168.5.242/32         scram-sha-256
+host    all             all            192.168.5.242/32           scram-sha-256
 ```
 
 - On Barman Server 
@@ -210,6 +212,7 @@ streaming_archiver_name = barman_receive_wal
 - TO see pg_replication_slots on standby server 
 ```sql
 select * from pg_replication_slots;
+select * from pg_stat_replication ;
 ```
 - To see streaming working from barman
 ```sql
@@ -220,4 +223,12 @@ psql -U streaming_barman -h 192.168.5.240 -c 'IDENTIFY_SYSTEM' replication=1
 su - barman
 vim ~/.pgpass
 hostname:port:database:username:password
+```
+- Barman command 
+```sh
+ barman replication-status standby
+ barman receive-wal standby
+ barman switch-wal --force --archive standby
+ barman list-backup standby
+ barman backup standby
 ```
