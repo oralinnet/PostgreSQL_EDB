@@ -15,6 +15,7 @@ LOGFILE=/var/log/pgagent_15.log
 
 su - enterprisedb
 vim .pgpass
+hostname:port:database:username:password
 127.0.0.1:5444:edb:enterprisedb:edb
 
 vim pg_hbf.conf
@@ -43,3 +44,5 @@ CREATE LANGUAGE plpgsql;
 
 
 --- then restart db and reload pgadmin
+
+pg_dump --username=enterprisedb --dbname=edb --clean --file=/var/lib/edb/as15/backups-`date +%Y-%m-%d-%H-%M-%S`.sql
