@@ -31,7 +31,7 @@ reboot
 cat /sys/kernel/mm/transparent_hugepage/enabled
 always madvise [never]
 ```
-```text
+```
 You have disabled Transparent Huge Pages on your Linux operating system. 
 But you are also required to configure tuned service as well.
 Create a Custom Profile for tuned Service:
