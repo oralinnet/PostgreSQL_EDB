@@ -6,7 +6,7 @@
 - OS user with sudo privileges
 - Python 3.6
 - EPAS Binary 
-- Key base ssh auth from barman to DB server
+- Key base ssh authentication from barman to DB server
 - Barman IP: 192.168.5.242, EPAS IP: 192.168.5.241
 - Ensure rsync package installed 
 
