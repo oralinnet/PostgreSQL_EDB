@@ -6,14 +6,14 @@ cat /sys/kernel/mm/transparent_hugepage/enabled
 [always] madvise never
 ### THP are currently enabled in your Linux operating system.
 ```
-```t
-To disable Transparent Huge Pages, you have to edit GRUB boot menu. For this purpose, edit the GRUB configuration file in vim text editor.
+```doc
+To disable Transparent Huge Pages, you have to edit GRUB boot menu. For this purpose, 
+Edit the GRUB configuration file in vim text editor.
 ```
 ```sh
 vim /etc/default/grub
-```
-```t
-Locate GRUB_CMDLINE_LINUX and append "transparent_hugepage=never" at the end of that line.
+
+# Locate GRUB_CMDLINE_LINUX and append "transparent_hugepage=never" at the end of that line.
 GRUB_CMDLINE_LINUX="resume=/dev/mapper/cl-swap rd.lvm.lv=cl/root rd.lvm.lv=cl/swap rhgb quiet transparent_hugepage=never"
 ```
 - Generate new GRUB boot menu based on customized configuration file.
@@ -32,7 +32,8 @@ cat /sys/kernel/mm/transparent_hugepage/enabled
 always madvise [never]
 ```
 ```t
-You have disabled Transparent Huge Pages on your Linux operating system. But you are also required to configure tuned service as well.
+You have disabled Transparent Huge Pages on your Linux operating system. 
+But you are also required to configure tuned service as well.
 Create a Custom Profile for tuned Service:
 tuned service is used for monitoring and tuning in a Linux system. It can be used to disable or enable THP.
 Therefore, you need to create a profile for tuned service and disable the Transparent Huge Pages in that profile.
