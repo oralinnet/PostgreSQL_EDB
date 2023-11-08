@@ -61,7 +61,7 @@ vim /var/log/pgagent_15.log
 ```sh
 systemctl status pgagent_15.service
 ```
-#### Create dump Backup from apAgent 
+#### Create dump Backup from pgAgent 
 - Create Directory for Backup and give proper permission to pgagent
 ```sh
 mkdir /path/of/backup 
