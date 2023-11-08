@@ -50,9 +50,24 @@ CREATE LANGUAGE plpgsql;
 - Start pgAgent 
 ```sh
 systemctl start pgagent_15.service
+systemctl enable pgagent_15.service
 ```
 - Now Reload PgAdmin 
 - Check logfile 
 ```sh
 vim /var/log/pgagent_15.log
+```
+- Check service running or not 
+```sh
+systemctl status pgagent_15.service
+```
+#### Create dump Backup from apAgent 
+- Create Directory for Backup and give proper permission to pgagent
+```sh
+mkdir /path/of/backup 
+chown -R pgagent:pgagent /path/of/backup
+chmo -R 775 /path/of/backup
+
+#### pgagent batch file 
+pg_dump -h 127.0.0.1 -d edb -f /path/of/backup/bkp-`date +%Y-%m-%d-%H-%M-%S`.sql -p 5444 -U enterprisedb
 ```
