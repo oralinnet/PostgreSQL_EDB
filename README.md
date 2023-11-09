@@ -48,4 +48,4 @@ yum install bash-completion
 - Step 4: [Install Pgbouncer](https://github.com/oralinnet/PostgreSQL_EDB/blob/main/Install/EDB_Pgbouncer_Install.md)
 - Step 5: [Install Barman](https://github.com/oralinnet/PostgreSQL_EDB/blob/main/Install/Barman_install.md)
 - step 6: [Install PEM](https://github.com/oralinnet/PostgreSQL_EDB/blob/main/Install/EDB_PEM_Install.md)
-- step 7: [Install pgAgent](https://github.com/oralinnet/PostgreSQL_EDB/blob/main/Install/Install_pgAgent.md)
+- step 7: [Install EDB pgAgent](https://github.com/oralinnet/PostgreSQL_EDB/blob/main/Install/Install_EDB_pgAgent.md)
