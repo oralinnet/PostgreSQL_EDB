@@ -1,4 +1,4 @@
-### Install and Configure pgAgent in RHEL 8
+### Install and Configure EDB pgAgent in RHEL 8
 #### Prerequisite
 - Enable EDB subcription
 - Internet Access 
@@ -10,14 +10,14 @@
 ```sh
 sudo curl -1sLf 'https://downloads.enterprisedb.com/zp579PrIC9a7kY4rQtxX63HAaXHtzeCA/enterprise/setup.rpm.sh' | sudo -E bash
 ##### Install pgAgent in EPAS server 
- sudo dnf -y install pgagent_15
+ sudo dnf -y install edb-as15-pgagent
 ```
 #### Configure pgAgent in EPAS server
 - Change pgAgent parameter pgagent_15.conf file 
 - Configure pgpass for bypass password which user is owner of EPAS
 
 ```sh
-vim /etc/pgagent/pgagent_15.conf
+vim /etc/sysconfig/edb/pgagent15/edb-pgagent-15.conf
 
 DBNAME=edb
 DBUSER=enterprisedb
@@ -49,25 +49,26 @@ CREATE LANGUAGE plpgsql;
 
 - Start pgAgent 
 ```sh
-systemctl start pgagent_15.service
-systemctl enable pgagent_15.service
+systemctl start edb-pgagent-15.service
+systemctl enable edb-pgagent-15.service
 ```
 - Now Reload PgAdmin 
 - Check logfile 
 ```sh
-vim /var/log/pgagent_15.log
+vim /var/log/edb/pgagent15/pgagent.log
 ```
 - Check service running or not 
 ```sh
-systemctl status pgagent_15.service
+systemctl status edb-pgagent-15.service
 ```
 #### Create dump Backup from pgAgent 
 - Create Directory for Backup and give proper permission to pgagent
 ```sh
 mkdir /path/of/backup 
-chown -R pgagent:pgagent /path/of/backup
+chown -R enterprisedb:enterprisedb /path/of/backup
 chmo -R 775 /path/of/backup
 
 #### pgagent batch file 
 pg_dump -h 127.0.0.1 -d edb -f /path/of/backup/bkp-`date +%Y-%m-%d-%H-%M-%S`.sql -p 5444 -U enterprisedb
 ```
+- After create pgagent job please check edb-pgagent-15.service running or not ensure it's running. 
