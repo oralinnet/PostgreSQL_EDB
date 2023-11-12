@@ -12,6 +12,7 @@
 - witness server no need EPAS 
 - Ensure Primary DB and Standby DB password base authentication 
 - Adjust firewall to allow EFM agents to communicate on ports 7800 and 7809 (depend on your EFM admin port)
+- Disable SElinux
 
 - In my case I used Three Servers 
 ```t
