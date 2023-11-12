@@ -11,7 +11,7 @@
 - Ensure you have VIP (virtual IP )
 - witness server no need EPAS 
 - Ensure Primary DB and Standby DB password base authentication 
-- Adjust firewall to allow EFM agents to communicate on ports 7800 to 7810
+- Adjust firewall to allow EFM agents to communicate on ports 7800 and 7809 (depend on your EFM admin port)
 
 - In my case I used Three Servers 
 ```t
@@ -20,9 +20,17 @@ Standby Node (node2)- 192.168.5.240     -- Standby DB
 Witness Node (node3) - 192.168.5.240
 VIP - 192.168.5.243
 ```
+- Login EDB websit (https://www.enterprisedb.com/accounts/profile) 
+- Repo Access --> Access EDB Repos 2.0 
+- Select Platform --> RHEL 8 --> Select software --> EDB Postgres Advanced Server (with version)
+- Install EPAS Binary 
+
+```sh
+sudo curl -1sLf 'https://downloads.enterprisedb.com/zp579PrIC9a7kY4rQtxX63HAaXHtzeCA/enterprise/setup.rpm.sh' | sudo -E bash
+```
 - Install Java on all servers 
 ```sh
-dnf install java -y
+sudo dnf install java -y
 java -version
 ```
 - Update pg_hba.conf file on both primary and standby server with the information of the replication and witness servers
@@ -39,7 +47,7 @@ select pg_reload_conf();
 ```
 - Install EFM binary in all servers Primary ,Standby and witness server 
 ```sh
-dnf -y install edb-efm47
+sudo dnf -y install edb-efm47
 ```
 #### Configure EFM on Primary DB Server 
 - Create super user for EFM
@@ -101,7 +109,7 @@ vim efm.nodes
 - Start Service and configure firewall
 ```sh
 sudo systemctl start edb-efm-4.7.service
-sudo firewall-cmd --permanent --add-port=7800-7810/tcp
+sudo firewall-cmd --permanent --add-port={7800,7809}/tcp        ## 7809 is admin port 
 sudo firewall-cmd --reload
 
 ```
@@ -116,11 +124,6 @@ export PATH=$PATH:/usr/edb/efm-4.7/bin
 - allow node 
 ```sh
 /usr/edb/efm-4.7/bin/efm allow-node  efm 192.168.5.241
-```
-- Stop Primary DB Server and restar EFM 
-```sh
-sudo systemctl restart edb-as-15
-sudo systemctl restart edb-efm-4.7.service
 ```
 
 #### EFM Configuration on Standby Node 
@@ -135,12 +138,12 @@ sudo chown efm:efm /etc/edb/efm-4.7/efm.nodes
 - Keep everything as it Change bind.address from efm.properties
 ```sh
 vim /etc/edb/efm-4.7/efm.properties
-bind.address=192.168.5.241:7800         -- standby server ip 
+bind.address=192.168.5.241:7800         ## standby server ip 
 ```
 - Start Service and configure firewall
 ```sh
 sudo systemctl start edb-efm-4.7.service
-sudo firewall-cmd --permanent --add-port=7800-7810/tcp
+sudo firewall-cmd --permanent --add-port={7800,7809}/tcp
 sudo firewall-cmd --reload
 
 ```
@@ -155,11 +158,6 @@ export PATH=$PATH:/usr/edb/efm-4.7/bin
 - allow node 
 ```sh
 /usr/edb/efm-4.7/bin/efm allow-node  efm 192.168.5.241
-```
-- Stop Primary DB Server and restar EFM 
-```sh
-sudo systemctl restart edb-as-15
-sudo systemctl restart edb-efm-4.7.service
 ```
 
 ### EFM Configuration on witness Server 
@@ -180,7 +178,7 @@ is.witness=true
 - Start Service and configure firewall
 ```sh
 sudo systemctl start edb-efm-4.7.service
-sudo firewall-cmd --permanent --add-port=7800-7810/tcp
+sudo firewall-cmd --permanent --add-port={7800,7809}/tcp
 sudo firewall-cmd --reload
 
 ```
@@ -196,10 +194,14 @@ export PATH=$PATH:/usr/edb/efm-4.7/bin
 ```sh
 /usr/edb/efm-4.7/bin/efm allow-node  efm 192.168.5.241
 ```
-- Stop Primary DB Server and restar EFM 
+- Restart Primary and standby DB and allow note(3 nodes) EFM cluster then check efm 
+- Ensure that all efm nodes are allow to efm nodes in EFM cluster
 ```sh
 sudo systemctl restart edb-as-15
-sudo systemctl restart edb-efm-4.7.service
+/usr/edb/efm-4.7/bin/efm cluster-status efm
+/usr/edb/efm-4.7/bin/efm allow-node  efm 192.168.5.240
+/usr/edb/efm-4.7/bin/efm allow-node  efm 192.168.5.241
+/usr/edb/efm-4.7/bin/efm allow-node  efm 192.168.5.242
 ```
 
 - Some EFM Command 
@@ -214,4 +216,5 @@ efm set-priority efm ip address     # Change priority Server
 When You reconfigure EPAS please restart EFM. Make ensure Ports are Open. Ensure All Email address is same. 
 Ensure "promote_trigger_file = '/tmp/trigger_file.trg'" this line is entry on both Primary and 
 standby server postgresql.conf file. Ensure your network connection speed minimum 100 MB/s.
+Log file location /var/log/efm-4.7/
 ```
