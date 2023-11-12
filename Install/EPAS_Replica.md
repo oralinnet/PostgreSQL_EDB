@@ -67,13 +67,13 @@ systemctl restart edb-as-15.service
 ### Primary site 
 sudo passwd enterprisedb 
 su - enterprisedb 
-ssh-agent
+ssh-keygen
 ssh-copy-id enterprisedb@192.168.5.241
 ssh enterprisedb@192.168.5.241
 ### Replica site (If you have swithover plan )
 sudo passwd enterprisedb 
 su - enterprisedb 
-ssh-agent
+ssh-keygen
 ssh-copy-id enterprisedb@192.168.5.240
 ssh enterprisedb@192.168.5.240
 ```
@@ -95,6 +95,13 @@ pg_basebackup -h 192.168.5.240 -U enterprisedb -D /var/lib/edb/as15/data -U repl
 touch /var/lib/edb/as15/data/standby.signal
 sudo systemctl restart edb-as-15.service        ### restart service
 ```
+- Check Replication in Primary server
+```sh
+su - enterprisedb 
+psql edb 
+select usename, application_name, client_addr, state, sync_priority, sync_state from pg_stat_replication;       ## check mode
+```
+
 #### Replication mode change 
 - By default replication mode is async
 ```sh
