@@ -1,6 +1,6 @@
 # PostgreSQL_EDB With HA Cluster 
 
-- Chosen Architecture
+#### Chosen Architecture
 ![Architecture](ss/prereq_arch.png)
 
 #### Lab Setup Requrement 
@@ -23,7 +23,7 @@
 ![Components](ss/prereq1.png)
 
 
-## RHEL Subscribe
+#### RHEL Subscribe
 
 -   Create RHN id / RedHat account in [redhat](https://www.redhat.com/)
 -   Register System with redhat
@@ -31,7 +31,7 @@
 -   Enable repos for ansible
 -   dnf install ansible -y
 
-## Subscribe your system with Redhat
+#### Subscribe your system with Redhat
 ```sh
 subscription-manager register
 subscription-manager list --available
@@ -39,6 +39,14 @@ subscription-manager attach --pool=<pool id>
 subscription-manager repos --enable ansible-VERSION-for-rhel-8-x86_64-rpms
 subscription-manager repos --enable ansible-2.9-for-rhel-8-x86_64-rpms
 yum install bash-completion
+```
+#### Install Common Package for every Server 
+```sh
+dnf -y install vim          ### Text Editor
+dnf -y install net-tools    ### IP Address and Network 
+dnf -y install rsync        ### Copy file 
+dnf -y install chrony       ### Date and time 
+dnf -y update               ### Update system 
 ```
 
 #### Installation Step with details 
