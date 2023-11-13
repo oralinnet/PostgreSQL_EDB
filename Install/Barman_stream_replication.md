@@ -1,4 +1,4 @@
-### Install Barman On RHEL 8
+### Install Barman On RHEL 8 and configure for Replica
 
 #### Prerequisite
 - Enable EDB subcription
@@ -37,13 +37,18 @@ sudo su - enterprisedb
 ssh-keygen				## if you already have ssh key no need it 
 ssh-copy-id barman@192.168.5.242
 ssh  barman@192.168.5.242       ### ssh login with out password
-psql edb
+
+### In Primary Server 
+sudo su - enterprisedb 
+psql edb 
 create user barman superuser  password 'hello';
-
-# Update pg_hba.conf and add barman server ip then reload 
+CREATE ROLE streaming_barman WITH REPLICATION PASSWORD 'hello' LOGIN;
+\q
+```
+- Update pg_hba.conf replication server add barman replication server ip then reload 
+```sh
+host  replication     streaming_barman 192.168.5.242/32         scram-sha-256
 host    all             all            192.168.5.242/32           scram-sha-256
-
-sudo systemctl restart edb-as-15
 ```
 
 #### Barman server 
@@ -54,22 +59,30 @@ sudo systemctl restart edb-as-15
 sudo cp /etc/barman.conf	/etc/barman.conf.orginal
 sudo vim /etc/barman.conf
 
-barman_home = /var/lib/barman/edb01     # Ensure Directory is exsis
+barman_home = /var/lib/barman/     # Ensure Directory is exsis
 compression = gzip
 immediate_checkpoint = true
 basebackup_retry_times = 3
 reuse_backup = link         ## Add this entry, for rsync 
 
-sudo cd /etc/barman.d
-sudo vim edb01.conf
 
-[edb01]
-description =  "EDB01 Server backup"
-ssh_command = ssh enterprisedb@192.168.5.241        # EPAS Server ssh 
-conninfo = host=192.168.5.241 user=barman port=5444 dbname=edb password=hello   # EPAS Server info
+cd /etc/barman.d
+sudo vim syncstandby.conf
+
+[syncstandby]
+description =  "Backup form sync standby Server"
+ssh_command = ssh enterprisedb@192.168.5.241    # standby server ip
+conninfo = host=192.168.5.241 user=barman port=5444 dbname=edb password=hello  # standby server info
 backup_options = concurrent_backup
+;backup_method = postgres         ### If you use postgres it't not support reuse_backup = link
 backup_method = rsync
+streaming_conninfo = host=192.168.5.241 port=5444 user=streaming_barman dbname=edb password=hello  # standby server info
+streaming_archiver = on
 archiver = on
+slot_name = barman
+create_slot = auto
+path_prefix = "/usr/edb/as15/bin"
+streaming_archiver_name = barman_receive_wal
 ```
 - First, we need to locate the value of the incoming backup directory from the barman-backup-server. On the Barman server, switch to the user barman
 ```sh
@@ -80,7 +93,7 @@ barman show-server edb01 | grep incoming_wals_directory
 ## incoming_wals_directory: /var/lib/barman/edb01/edb01/incoming
 ```
 
-### EPAS Server 
+### EPAS Server Primary 
 - Update archive_command for PITR, wal file copy to barman incoming directory 
 ```sh
 # edit postgresql.conf
@@ -182,4 +195,26 @@ There are quite a few options, arguments, and variables here, so let’s explain
 ```sh
 sudo systemctl start edb-as-15
 ```
-
+- TO see pg_replication_slots on standby server 
+```sql
+select * from pg_replication_slots;
+select * from pg_stat_replication ;
+```
+- To see streaming working from barman
+```sql
+psql -U streaming_barman -h 192.168.5.240 -c 'IDENTIFY_SYSTEM' replication=1
+```
+- password less connection from barman to DB server(DB user Passwod)
+```sh
+su - barman
+vim ~/.pgpass
+hostname:port:database:username:password
+```
+- Barman command 
+```sh
+ barman replication-status standby
+ barman receive-wal standby
+ barman switch-wal --force --archive standby
+ barman list-backup standby
+ barman backup standby
+```
