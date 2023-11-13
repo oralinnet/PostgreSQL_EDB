@@ -57,3 +57,4 @@ dnf -y update               ### Update system
 - Step 5: [Install Barman](https://github.com/oralinnet/PostgreSQL_EDB/blob/main/Install/Barman_install.md)
 - step 6: [Install PEM](https://github.com/oralinnet/PostgreSQL_EDB/blob/main/Install/EDB_PEM_Install.md)
 - step 7: [Install EDB pgAgent](https://github.com/oralinnet/PostgreSQL_EDB/blob/main/Install/Install_EDB_pgAgent.md)
+- [Install and configure Barma replication from replica server](https://github.com/oralinnet/PostgreSQL_EDB/blob/main/Install/Barman_stream_replication.md)
