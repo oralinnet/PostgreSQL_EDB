@@ -87,19 +87,19 @@ streaming_archiver_name = barman_receive_wal
 - First, we need to locate the value of the incoming backup directory from the barman-backup-server. On the Barman server, switch to the user barman
 ```sh
 sudo su - barman
-barman check edb01 
-barman show-server edb01 | grep incoming_wals_directory
+barman check syncstandby 
+barman show-server syncstandby | grep incoming_wals_directory
 ## barman show-server command output
-## incoming_wals_directory: /var/lib/barman/edb01/edb01/incoming
+## incoming_wals_directory: /var/lib/barman/syncstandby/syncstandby/incoming
 ```
 
 ### EPAS Server Primary 
 - Update archive_command for PITR, wal file copy to barman incoming directory 
 ```sh
 # edit postgresql.conf
-archive_command = 'test ! -f barman@192.168.5.242:/var/lib/barman/edb01/edb01/incoming/%f && rsync -a %p barman@192.168.5.242:/var/lib/barman/edb01/edb01/incoming/%f'
+archive_command = 'test ! -f barman@192.168.5.242:/var/lib/barman/syncstandby/syncstandby/incoming/%f && rsync -a %p barman@192.168.5.242:/var/lib/barman/syncstandby/syncstandby/incoming/%f'
 ### Archive command for multifile location archive file copy
-archive_command = 'rsync -a %p /var/lib/edb/as15/ARCHIVELOG/%f && rsync -a %p barman@192.168.5.242:/var/lib/barman/edb01/edb01/incoming/%f && rsync -a %p enterprisedb@192.168.5.241:/var/lib/edb/as15/ARCHIVELOG/%f'
+archive_command = 'rsync -a %p /var/lib/edb/as15/ARCHIVELOG/%f && rsync -a %p barman@192.168.5.242:/var/lib/barman/syncstandby/syncstandby/incoming/%f && rsync -a %p enterprisedb@192.168.5.241:/var/lib/edb/as15/ARCHIVELOG/%f'
 
 sudo systemctl restart edb-as-15
 sudo su - enterprisedb 
@@ -110,14 +110,14 @@ select pg_switch_wal();	        ## Switch wal file and check it
 ```sh
 sudo su - barman            # switch barman user 
 barman list-server          # server list 
-barman check edb01         # Barman configuration check for edb01
-barman switch-xlog --force --archive edb01      # Wal file switch over
-barman show-server edb01        # show edb01 Server backup 
-barman backup edb01         # Backup edb01 server 
-barman list-backup edb01    ### output First part is name second part is backup id
-barman check-backup edb01 backup_id         # backup check 
-barman show-backup edb01 latest     # letest backup check 
-barman list-files edb01 backup-id   # file show 
+barman check syncstandby         # Barman configuration check for syncstandby
+barman switch-xlog --force --archive syncstandby      # Wal file switch over
+barman show-server syncstandby        # show syncstandby Server backup 
+barman backup syncstandby         # Backup syncstandby server 
+barman list-backup syncstandby    ### output First part is name second part is backup id
+barman check-backup syncstandby backup_id         # backup check 
+barman show-backup syncstandby latest     # letest backup check 
+barman list-files syncstandby backup-id   # file show 
 
 ```
 
@@ -125,12 +125,12 @@ barman list-files edb01 backup-id   # file show
 - Ideally your backups should happen automatically on a schedule
 
 ```t
-In this step we’ll automate our backups, and we’ll tell Barman to perform maintenance on the backups so files older than the retention policy are deleted. To enable scheduling, run this command as the barman user on the edb01 (switch to this user if necessary)
+In this step we’ll automate our backups, and we’ll tell Barman to perform maintenance on the backups so files older than the retention policy are deleted. To enable scheduling, run this command as the barman user on the syncstandby (switch to this user if necessary)
 ```
 ```sh
 sudo su - barman 
 crontab -e
-30 23 * * * /usr/bin/barman backup edb01    # full backup of the edb01 every night at 11:30 PM
+30 23 * * * /usr/bin/barman backup syncstandby    # full backup of the syncstandby every night at 11:30 PM
 * * * * * /usr/bin/barman cron              # Run every minute and perform maintenance operations on both WAL files and base backup files.
 ```
 
@@ -142,11 +142,11 @@ sudo systemctl stop edb-as-15
 ```
 - Let’s locate the details for the latest backup
 ```sh
-barman show-backup edb01 latest
+barman show-backup syncstandby latest
 
 ### output 
 Backup 20231029T170617:
-  Server Name            : edb01
+  Server Name            : syncstandby
   System Id              : 7294227102000760227
   Status                 : DONE
   PostgreSQL Version     : 150004
@@ -169,15 +169,15 @@ Backup 20231029T170617:
 ```t
 From the output, note down the backup ID printed on the first line. Backup 20231029T170617
 Also check when the backup was made, from the Begin time filed 
-Next, run this command to restore the specified backup from the edb01 to the target server:
+Next, run this command to restore the specified backup from the syncstandby to the target server:
 
 ```
 - Recover PITR
 ```sh
-barman recover --target-time "Begin time"  --remote-ssh-command "ssh enterprisedb@target-db-server-ip"   edb01   backup-id   /var/lib/edb/as15/data
+barman recover --target-time "Begin time"  --remote-ssh-command "ssh enterprisedb@target-db-server-ip"   syncstandby   backup-id   /var/lib/edb/as15/data
 
 ### With out PITR
-barman recover --remote-ssh-command "ssh enterprisedb@target-db-server-ip"   edb01   backup-id   /var/lib/edb/as15/data
+barman recover --remote-ssh-command "ssh enterprisedb@target-db-server-ip"   syncstandby   backup-id   /var/lib/edb/as15/data
 ```
 
 ```t
@@ -185,7 +185,7 @@ There are quite a few options, arguments, and variables here, so let’s explain
 
     -- target-time "Begin time": Use the begin time from the show-backup command
     -- remote-ssh-command "ssh postgres@standby-db-server-ip": Use the IP address of the target-db-server-ip
-    -- edb01: Use the name of the database server from your /etc/barman.conf file
+    -- syncstandby: Use the name of the database server from your /etc/barman.conf file
     backup-id: Use the backup ID from the show-backup command, or use latest if that’s the one you want
     /var/lib/edb/as15/data: The path where you want the backup to be restored. This path will become the new data directory for Postgres on the standby server. Here, we have chosen the default data directory for Postgres in CentOS. For real-life use cases, choose the appropriate path
 
