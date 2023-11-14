@@ -1,8 +1,9 @@
 # PostgreSQL_EDB With HA Cluster 
 
+<!-- 
 #### Chosen Architecture
 ![Architecture](ss/prereq_arch.png)
-
+-->
 #### Lab Setup Requrement 
 - VM with RHEL 8 minimum 2 GB RAM 20 GB Free space 
 - EDB credentials for EDB Repos 2.0
