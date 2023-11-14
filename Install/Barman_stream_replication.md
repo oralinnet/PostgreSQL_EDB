@@ -1,4 +1,4 @@
-### Install Barman On RHEL 8 and configure for Replica
+### Install Barman On RHEL 8 and configure for Replica server with Stream wal replication
 
 #### Prerequisite
 - Enable EDB subcription
@@ -24,15 +24,17 @@ barman --version
 sudo passwd barman
 sudo su - barman
 ssh-keygen
-ssh-copy-id enterprisedb@192.168.5.241				##  db server user and pass
+ssh-copy-id enterprisedb@192.168.5.241				##  db server user and pass standby
+ssh-copy-id enterprisedb@192.168.5.240				##  db server user and pass primary
 ssh enterprisedb@192.168.5.241
 ```
 #### On EPAS Server Site 
-- Keybase login 
+- Keybase login both server (pirmary & standby)
 - DB User create for barman backup
 - Barman server IP add in EPAS server pg_hba.conf file 
 - Restart EPAS
 ```sh
+### From standby site 
 sudo su - enterprisedb
 ssh-keygen				## if you already have ssh key no need it 
 ssh-copy-id barman@192.168.5.242
@@ -40,6 +42,9 @@ ssh  barman@192.168.5.242       ### ssh login with out password
 
 ### In Primary Server 
 sudo su - enterprisedb 
+ssh-keygen				## if you already have ssh key no need it 
+ssh-copy-id barman@192.168.5.242
+ssh  barman@192.168.5.242       ### ssh login with out password
 psql edb 
 create user barman superuser  password 'hello';
 CREATE ROLE streaming_barman WITH REPLICATION PASSWORD 'hello' LOGIN;
@@ -94,12 +99,14 @@ barman show-server syncstandby | grep incoming_wals_directory
 ```
 
 ### EPAS Server Primary 
-- Update archive_command for PITR, wal file copy to barman incoming directory 
+- Update archive_command for PITR, wal file copy to barman incoming directory (both server )
 ```sh
 # edit postgresql.conf
 archive_command = 'test ! -f barman@192.168.5.242:/var/lib/barman/syncstandby/syncstandby/incoming/%f && rsync -a %p barman@192.168.5.242:/var/lib/barman/syncstandby/syncstandby/incoming/%f'
 ### Archive command for multifile location archive file copy
 archive_command = 'rsync -a %p /var/lib/edb/as15/ARCHIVELOG/%f && rsync -a %p barman@192.168.5.242:/var/lib/barman/syncstandby/syncstandby/incoming/%f && rsync -a %p enterprisedb@192.168.5.241:/var/lib/edb/as15/ARCHIVELOG/%f'
+
+### NB: Ensure all server can ssh access from eatch other without password 
 
 sudo systemctl restart edb-as-15
 sudo su - enterprisedb 

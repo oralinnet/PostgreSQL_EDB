@@ -38,7 +38,7 @@ streaming_archiver_name = barman_receive_wal
 
 yum install barman-cli
 
-
+archive_command = 'barman-wal-archive test-machine01 test-machine02 %p'
 
 
 CREATE ROLE streaming_barman WITH REPLICATION PASSWORD 'hello' LOGIN;
