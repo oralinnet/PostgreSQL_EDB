@@ -6,7 +6,7 @@
 - OS user with sudo privileges
 - Python 3.6
 - EPAS Binary 
-- Key base ssh authentication from barman to DB server
+- Key base ssh authentication from both side barman to DB server, Recovery server 
 - Barman IP: 192.168.5.242, EPAS IP: 192.168.5.240, Recovery Server IP: 192.168.5.239
 - Install Barman binary cli on Recovery Server
 - Ensure rsync package installed all server
