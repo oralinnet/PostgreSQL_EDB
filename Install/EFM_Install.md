@@ -217,5 +217,5 @@ efm set-priority efm ip address     # Change priority Server
 When You reconfigure EPAS please restart EFM. Make ensure Ports are Open. Ensure All Email address is same. 
 Ensure "promote_trigger_file = '/tmp/trigger_file.trg'" this line is entry on both Primary and 
 standby server postgresql.conf file. Ensure your network connection speed minimum 100 MB/s.
-Log file location /var/log/efm-4.7/
+Log file location /var/log/efm-4.7/. Its working Good when your os crush
 ```
