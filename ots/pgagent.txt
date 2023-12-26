@@ -2,6 +2,8 @@
 
 install pgagen from edb repo 
 configure then start and enable 
+check pgagent server owner make sure service owner is dbservice owner 
+
 
 vim /etc/pgagent/pgagent_15.conf
 
