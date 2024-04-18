@@ -1,0 +1,14 @@
+https://www.cybertec-postgresql.com/en/huge-pages-postgresql/
+
+cat /proc/meminfo | grep -i HugePage
+/usr/pgsql-15/bin/postgres --shared-buffers=20GB -D $PGDATA -C shared_memory_size_in_huge_pages
+/usr/edb/as15/bin/edb-postgres --shared-buffers=20GB -D /var/lib/edb/as15/data -C shared_memory_size_in_huge_pages
+echo 10475 > /proc/sys/vm/nr_hugepages
+grep -i hugepage /proc/meminfo
+cat /etc/sysctl.d/01-nr-hugepages.conf
+
+shared_buffers = 20GB
+huges_pages = on
+huge_page_size = 0 #use default kernel setting
+
+grep -i hugepage /proc/meminfo
