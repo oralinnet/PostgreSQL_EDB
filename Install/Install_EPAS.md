@@ -94,6 +94,7 @@ pg_ctl -D /mydb stop                        ### Stop DB
 - Enable edb-as-15 service for auto start after reboot
 - Open DB port in firewall 
 - Accept Connection from out site in DB 
+- <span style="color:blue"> Make sure isten_addresses line is uncommented and set it's value to isten_addresses = '*' </span>
 
 ```sh
 sudo systemctl enable edb-as-15
