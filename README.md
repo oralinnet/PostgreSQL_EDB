@@ -37,9 +37,6 @@
 subscription-manager register
 subscription-manager list --available
 subscription-manager attach --pool=<pool id>
-subscription-manager repos --enable ansible-VERSION-for-rhel-8-x86_64-rpms
-subscription-manager repos --enable ansible-2.9-for-rhel-8-x86_64-rpms
-yum install bash-completion
 ```
 #### Install Common Package for every Server 
 ```sh
