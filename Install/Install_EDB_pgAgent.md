@@ -71,4 +71,13 @@ chmo -R 775 /path/of/backup
 #### pgagent batch file 
 pg_dump -h 127.0.0.1 -d edb -f /path/of/backup/bkp-`date +%Y-%m-%d-%H-%M-%S`.sql -p 5444 -U enterprisedb
 ```
-- After create pgagent job please check edb-pgagent-15.service running or not ensure it's running. 
+- After create pgagent job please check edb-pgagent-15.service running or not ensure it's running.
+
+- troubleshooting
+ - If you see pgagent is runnig but job is not execute then check which db is owner of this job, So connect db and check job status by default its connect to postgres db. 
+ - check /etc/sysconfig/edb/pgagent15/edb-pgagent-15.conf file and change it
+```sql
+-- check job status
+SELECT jobid, jobname, jobenabled FROM pgagent.pga_job;
+SELECT jstjobid, jstname, jstkind, jstenabled FROM pgagent.pga_jobstep;
+```
